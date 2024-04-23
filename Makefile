@@ -1,4 +1,3 @@
-
 INC = -Iinclude
 LIB = -lpthread
 
@@ -48,4 +47,3 @@ $(OBJ):
 clean:
 	rm -f $(OBJ)/*.o os sched mem
 	rm -r $(OBJ)
-

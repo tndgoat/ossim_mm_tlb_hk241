@@ -157,11 +157,15 @@ int MEMPHY_get_freefp(struct memphy_struct *mp, int *retfpn)
 
 int MEMPHY_dump(struct memphy_struct * mp)
 {
-    /*TODO dump memphy contnt mp->storage 
-     *     for tracing the memory content
-     */
-
-    return 0;
+	/*TODO dump memphy contnt mp->storage
+ 	* 	for tracing the memory content
+ 	*/
+    	printf("=======MEMORY PHYSIC DUMP=======\n");
+    	for ( int addr = 0; addr < mp->maxsz; addr++){
+            	printf("Ox%081x: %08x\n", addr, mp->storage[addr]);
+    	}
+    	printf("=================================\n");
+    	return 0;
 }
 
 int MEMPHY_put_freefp(struct memphy_struct *mp, int fpn)

@@ -77,7 +77,7 @@ int tlballoc(struct pcb_t *proc, uint32_t size, uint32_t reg_index)
       // Print status
       printf("Memory allocated successfully for Process %d - size: %u, address: %d\n", proc->pid, size, addr);
   } else {
-      // Handling error if memory allocation fails
+      // Print error if memory allocation fails
       printf("Memory allocation failed for Process %d - size: %u\n", proc->pid, size);
   }
 
@@ -104,8 +104,8 @@ int tlbfree_data(struct pcb_t *proc, uint32_t reg_index)
   // Read TLB cache to obtain the cached frame number
   BYTE cached_frame_number;
   if (tlb_cache_read(tlb, pid, pgnum, &cached_frame_number) == 0) { // Check if cached frame number is valid
-      // Update TLB cache with a new frame number (assuming 0 after freeing)
-      tlb_cache_write(tlb, pid, pgnum, 0); // 0 as placeholder value
+      // Update TLB cache with a new frame number
+      tlb_cache_write(tlb, pid, pgnum, -1);
   } else {
       // Handling error if TLB cache read fails
       return -1;

@@ -6,7 +6,6 @@
  * a personal to use and modify the Licensed Source Code for 
  * the sole purpose of studying during attending the course CO2018.
  */
-#ifdef MM_TLB
 /*
  * Memory physical based TLB Cache
  * TLB cache module tlb/tlbcache.c
@@ -20,6 +19,9 @@
 #include "mm.h"
 #include <stdlib.h>
 #include <limits.h>
+#ifdef CPU_TLB
+
+
 
 #define init_tlbcache(mp,sz,...) init_memphy(mp, sz, (1, ##__VA_ARGS__))
 typedef struct {
@@ -73,10 +75,10 @@ int tlb_cache_write(struct memphy_struct *mp, int pid, int pgnum, BYTE value)
    int min_used_index = -1;
    int min_used_time = INT_MAX;
    BYTE data;
-   if ( tlb_cache_read(mp, pid, pnum, data) == 0) return 0; // HIT
+   if ( tlb_cache_read(mp, pid, pgnum, data) == 0) return 0; // HIT
    for (int i = 0; i < mp->maxsz / sizeof(TLBEntry); i++) {
         if (!entries[i].valid) {  // Find an empty slot
-            entries[i] = (TLBEntry){1, pid, pgnum, value, ++global_time};
+            entries[i] = (TLBEntry){1, pid, pgnum, value, ++global_timer};
             return 0;  // New entry added
         }
         if (entries[i].last_used < min_used_time) {  // Track least recently used
@@ -86,7 +88,7 @@ int tlb_cache_write(struct memphy_struct *mp, int pid, int pgnum, BYTE value)
     }
     
    // No empty slot found, replace least recently used
-   entries[min_used_index] = (TLBEntry){1, pid, pgnum, value, ++global_time};
+   entries[min_used_index] = (TLBEntry){1, pid, pgnum, value, ++global_timer};
    return -1; // MISS
 }
 

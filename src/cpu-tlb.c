@@ -21,13 +21,29 @@ int tlb_change_all_page_tables_of(struct pcb_t *proc,  struct memphy_struct * mp
   /* TODO update all page table directory info 
    *      in flush or wipe TLB (if needed)
    */
-
+  tlb_flush_tlb_of(proc, mp); // Flush TLB for the given process
   return 0;
 }
 
 int tlb_flush_tlb_of(struct pcb_t *proc, struct memphy_struct * mp)
 {
   /* TODO flush tlb cached*/
+  if (proc == NULL || mp == NULL || mp->used_fp_list == NULL) {
+      // Return an error code to indicate invalid input parameters
+      return -1;
+  }
+  struct framephy_struct *tlb_cache = mp->used_fp_list;
+
+  // Iterate through the TLB cache
+  while (tlb_cache != NULL) {
+      // Check if the TLB entry is associated with the provided process (proc)
+      if (tlb_cache->owner == proc->mm) {
+          // Invalidate the TLB entry by setting its owner to NULL
+          MEMPHY_remove_usedfp(mp, tlb_cache->fpn);
+          MEMPHY_put_freefp(mp, tlb_cache->fpn);
+      }
+      tlb_cache = tlb_cache->fp_next;
+  }
 
   return 0;
 }
@@ -40,12 +56,30 @@ int tlb_flush_tlb_of(struct pcb_t *proc, struct memphy_struct * mp)
 int tlballoc(struct pcb_t *proc, uint32_t size, uint32_t reg_index)
 {
   int addr, val;
-
   /* By default using vmaid = 0 */
   val = __alloc(proc, 0, reg_index, size, &addr);
 
   /* TODO update TLB CACHED frame num of the new allocated page(s)*/
   /* by using tlb_cache_read()/tlb_cache_write()*/
+
+  if (val == 0) { // Allocation successful
+      // Update TLB CACHED frame number of the new allocated page(s)
+      struct memphy_struct *tlb = proc->tlb;
+      int pid = proc->pid;
+      int pgnum = reg_index; 
+
+      // Assuming newly allocated page(s) have frame number 1
+      BYTE new_frame_number = 1;
+
+      // Update TLB cache with the new frame number
+      tlb_cache_write(tlb, pid, pgnum, new_frame_number);
+
+      // Print status
+      printf("Memory allocated successfully for Process %d - size: %u, address: %d\n", proc->pid, size, addr);
+  } else {
+      // Handling error if memory allocation fails
+      printf("Memory allocation failed for Process %d - size: %u\n", proc->pid, size);
+  }
 
   return val;
 }
@@ -61,6 +95,21 @@ int tlbfree_data(struct pcb_t *proc, uint32_t reg_index)
 
   /* TODO update TLB CACHED frame num of freed page(s)*/
   /* by using tlb_cache_read()/tlb_cache_write()*/
+    
+  // Update TLB CACHED frame number of freed page(s)
+  struct memphy_struct *tlb = proc->tlb;
+  int pid = proc->pid; 
+  int pgnum = reg_index;
+  
+  // Read TLB cache to obtain the cached frame number
+  BYTE cached_frame_number;
+  if (tlb_cache_read(tlb, pid, pgnum, &cached_frame_number) == 0) { // Check if cached frame number is valid
+      // Update TLB cache with a new frame number (assuming 0 after freeing)
+      tlb_cache_write(tlb, pid, pgnum, 0); // 0 as placeholder value
+  } else {
+      // Handling error if TLB cache read fails
+      return -1;
+  }
 
   return 0;
 }

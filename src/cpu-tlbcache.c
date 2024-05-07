@@ -72,7 +72,8 @@ int tlb_cache_write(struct memphy_struct *mp, int pid, int pgnum, BYTE value)
    TLBEntry *entries = (TLBEntry*) mp->storage;
    int min_used_index = -1;
    int min_used_time = INT_MAX;
-
+   BYTE data;
+   if ( tlb_cache_read(mp, pid, pnum, data) == 0) return 0; // HIT
    for (int i = 0; i < mp->maxsz / sizeof(TLBEntry); i++) {
         if (!entries[i].valid) {  // Find an empty slot
             entries[i] = (TLBEntry){1, pid, pgnum, value, ++global_time};
@@ -86,7 +87,7 @@ int tlb_cache_write(struct memphy_struct *mp, int pid, int pgnum, BYTE value)
     
    // No empty slot found, replace least recently used
    entries[min_used_index] = (TLBEntry){1, pid, pgnum, value, ++global_time};
-   return -1;
+   return -1; // MISS
 }
 
 /*

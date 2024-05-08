@@ -89,6 +89,7 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
         *alloc_addr = rgnode.rg_start;
         // Print status
         printf("Allocation for Process %d - size needed %d\n", caller->pid, size);
+        printf("---------------- PAGE TABLE AND FREE_RG LIST CONTENT ---------------- \n");
         print_pgtbl(caller, 0, -1);
         print_list_vma(caller->mm->mmap);
         print_list_rg(caller->mm->mmap->vm_freerg_list);
@@ -118,6 +119,7 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
     *alloc_addr = old_sbrk;
     // Print status
     printf("Allocation for Process %d - size needed %d\n", caller->pid, size);
+    printf("---------------- PAGE TABLE AND FREE_RG LIST CONTENT ---------------- \n");
     print_pgtbl(caller, 0, -1);
     print_list_vma(caller->mm->mmap);
     print_list_rg(caller->mm->mmap->vm_freerg_list);
@@ -154,9 +156,12 @@ int __free(struct pcb_t *caller, int vmaid, int rgid) {
     /* Enlist the obsoleted memory region */
     enlist_vm_freerg_list(caller->mm, rgnode);
     printf("Free for Process %d: free range [%ld -%ld]\n", caller->pid, rgnode->rg_start, rgnode->rg_end);
-    
+    printf("---------------- PAGE TABLE AND FREE_RG LIST CONTENT ---------------- \n");
+
     /* Print Status */
     print_pgtbl(caller, 0, -1);
+    print_list_vma(caller->mm->mmap);
+    print_list_rg(caller->mm->mmap->vm_freerg_list);
 
     return 0;
 }
@@ -320,6 +325,11 @@ int __read(struct pcb_t *caller, int vmaid, int rgid, int offset, BYTE *data)
   if(currg == NULL || cur_vma == NULL) /* Invalid memory identify */
 	  return -1;
 
+  if(currg->rg_start + offset > cur_vma->sbrk) {
+  	printf("Offset out of range \n");
+  	return -1;
+  }
+
   pg_getval(caller->mm, currg->rg_start + offset, data, caller);
 
   return 0;
@@ -365,6 +375,11 @@ int __write(struct pcb_t *caller, int vmaid, int rgid, int offset, BYTE value)
   if(currg == NULL || cur_vma == NULL) /* Invalid memory identify */
 	  return -1;
 
+  if(currg->rg_start + offset > cur_vma->sbrk) {
+  	printf("Offset out of range \n");
+  	return -1;
+  }
+
   pg_setval(caller->mm, currg->rg_start + offset, value, caller);
 
   return 0;
@@ -403,7 +418,7 @@ int free_pcb_memph(struct pcb_t *caller)
   for(pagenum = 0; pagenum < PAGING_MAX_PGN; pagenum++)
   {
     pte= caller->mm->pgd[pagenum];
-
+    if (!PAGING_PAGE_PRESENT(pte)) continue;
     if (!PAGING_PAGE_PRESENT(pte))
     {
       fpn = PAGING_FPN(pte);

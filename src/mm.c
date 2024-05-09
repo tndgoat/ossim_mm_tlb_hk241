@@ -135,7 +135,7 @@ int alloc_pages_range(struct pcb_t *caller, int req_pgnum, struct framephy_struc
       else {
         newfp_str->fp_next = malloc(sizeof(struct framephy_struct));
         newfp_str->fp_next->fpn = fpn;
-        newfp_str->owner->owner = caller->mm;
+        newfp_str->owner = caller->mm;
         newfp_str->fp_next->fp_next = NULL;
         newfp_str = newfp_str->fp_next;
       }
@@ -178,7 +178,7 @@ int alloc_pages_range(struct pcb_t *caller, int req_pgnum, struct framephy_struc
       else {
         newfp_str->fp_next = malloc(sizeof(struct framephy_struct));
         newfp_str->fp_next->fpn = vicfpn;
-        newfp_str->owner->owner = caller->mm;
+        newfp_str->owner = caller->mm;
         newfp_str->fp_next->fp_next = NULL;
         newfp_str = newfp_str->fp_next;
       }

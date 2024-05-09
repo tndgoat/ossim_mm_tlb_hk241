@@ -15,7 +15,6 @@
  * and runs at high speed
  */
 
-
 #include "mm.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -75,7 +74,7 @@ int tlb_cache_write(struct memphy_struct *mp, int pid, int pgnum, BYTE value)
    TLBEntry *entries = (TLBEntry*) mp->storage;
    int min_used_index = -1;
    int min_used_time = INT_MAX;
-   BYTE data;
+   BYTE* data;
    if ( tlb_cache_read(mp, pid, pgnum, data) == 0) return 0; // HIT
    for (int i = 0; i < mp->maxsz / sizeof(TLBEntry); i++) {
         if (!entries[i].valid) {  // Find an empty slot

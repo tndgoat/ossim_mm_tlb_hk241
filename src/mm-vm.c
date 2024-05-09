@@ -117,6 +117,7 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
         enlist_vm_freerg_list(caller->mm, left_rg);
     }
     *alloc_addr = old_sbrk;
+    
     // Print status
     printf("Allocation for Process %d - size needed %d\n", caller->pid, size);
     printf("---------------- PAGE TABLE AND FREE_RG LIST CONTENT ---------------- \n");

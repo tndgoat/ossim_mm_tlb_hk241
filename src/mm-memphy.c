@@ -5,6 +5,7 @@
 
 #include "mm.h"
 #include <stdlib.h>
+#include <stdio.h>
 #ifdef MM_PAGING
 /*
  *  MEMPHY_mv_csr - move MEMPHY cursor

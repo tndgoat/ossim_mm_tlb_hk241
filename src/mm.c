@@ -140,7 +140,8 @@ int alloc_pages_range(struct pcb_t *caller, int req_pgnum, struct framephy_struc
         newfp_str = newfp_str->fp_next;
       }
         
-   } else {  // ERROR CODE of obtaining somes but not enough frames
+    } 
+    else {  // ERROR CODE of obtaining somes but not enough frames
       int vicpgn, swpfpn;
       int vicfpn;
       uint32_t vicpte;
@@ -155,7 +156,8 @@ int alloc_pages_range(struct pcb_t *caller, int req_pgnum, struct framephy_struc
         /* Copy victim frame to swap */
         __swap_cp_page(caller->mram, vicfpn, caller->active_mswp, swpfpn);
         pte_set_swap(&caller->mm->pgd[vicpgn], 0, swpfpn);
-      } else {
+      } 
+      else {
         /*Get global frame*/
         struct framephy_struct *fp = MEMPHY_get_usedfp(caller->mram);
         find_victim_page(fp->owner, &vicpgn);
@@ -168,7 +170,7 @@ int alloc_pages_range(struct pcb_t *caller, int req_pgnum, struct framephy_struc
         __swap_cp_page(caller->mram, fp->fpn, caller->active_mswp, swpfpn);
         pte_set_swap(&fp->owner->pgd[vicpgn], 0, swpfpn);
       }
-    if ( pgit == 0){
+      if ( pgit == 0){
         newfp_str = malloc(sizeof(struct framephy_struct));
         newfp_str->fpn = vicfpn;
         newfp_str->owner = caller->mm;
@@ -176,6 +178,9 @@ int alloc_pages_range(struct pcb_t *caller, int req_pgnum, struct framephy_struc
         *frm_lst = newfp_str;
       }
       else {
+        while (newfp_str->fp_next) {
+          newfp_str = newfp_str ->fp_next;
+        }
         newfp_str->fp_next = malloc(sizeof(struct framephy_struct));
         newfp_str->fp_next->fpn = vicfpn;
         newfp_str->owner = caller->mm;

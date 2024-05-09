@@ -21,7 +21,8 @@ int tlb_change_all_page_tables_of(struct pcb_t *proc,  struct memphy_struct * mp
   /* TODO update all page table directory info 
    *      in flush or wipe TLB (if needed)
    */
-  tlb_flush_tlb_of(proc, mp); // Flush TLB for the given process
+  tlb_flush_tlb_of(proc, mp);
+  //We don't really use this function
   return 0;
 }
 

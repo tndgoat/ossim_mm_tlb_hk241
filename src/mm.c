@@ -127,15 +127,15 @@ int alloc_pages_range(struct pcb_t *caller, int req_pgnum, struct framephy_struc
     if(MEMPHY_get_freefp(caller->mram, &fpn) == 0) {
       if ( pgit == 0){
         newfp_str = malloc(sizeof(struct framephy_struct));
-        newfp_str->fpn = fpn;
         newfp_str->owner = caller->mm;
+        newfp_str->fpn = fpn;
         newfp_str->fp_next = NULL;
         *frm_lst = newfp_str;
       }
       else {
         newfp_str->fp_next = malloc(sizeof(struct framephy_struct));
-        newfp_str->fp_next->fpn = fpn;
         newfp_str->owner = caller->mm;
+        newfp_str->fp_next->fpn = fpn;
         newfp_str->fp_next->fp_next = NULL;
         newfp_str = newfp_str->fp_next;
       }
@@ -146,7 +146,7 @@ int alloc_pages_range(struct pcb_t *caller, int req_pgnum, struct framephy_struc
       int vicfpn;
       uint32_t vicpte;
       /* Find victim page */
-      if (find_victim_page(caller->mm, &vicpgn) ==0) {
+      if (find_victim_page(caller->mm, &vicpgn) == 0) {
         vicpte = caller->mm->pgd[vicpgn];
         vicfpn = PAGING_FPN(vicpte);
         /* Remove frame from used_fp_list*/
@@ -172,8 +172,8 @@ int alloc_pages_range(struct pcb_t *caller, int req_pgnum, struct framephy_struc
       }
       if ( pgit == 0){
         newfp_str = malloc(sizeof(struct framephy_struct));
-        newfp_str->fpn = vicfpn;
         newfp_str->owner = caller->mm;
+        newfp_str->fpn = vicfpn;
         newfp_str->fp_next = NULL;
         *frm_lst = newfp_str;
       }
@@ -182,10 +182,10 @@ int alloc_pages_range(struct pcb_t *caller, int req_pgnum, struct framephy_struc
           newfp_str = newfp_str ->fp_next;
         }
         newfp_str->fp_next = malloc(sizeof(struct framephy_struct));
+        newfp_str->fp_next->owner = caller->mm;
         newfp_str->fp_next->fpn = vicfpn;
-        newfp_str->owner = caller->mm;
         newfp_str->fp_next->fp_next = NULL;
-        newfp_str = newfp_str->fp_next;
+        newfp_str = *frm_lst;
       }
    }
   }

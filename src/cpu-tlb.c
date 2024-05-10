@@ -148,7 +148,7 @@ int tlbread(struct pcb_t * proc, uint32_t source,
 
   if(frmnum < 0){
     if(tlb_cache_write(proc->tlb, proc->pid, source, destination) < 0){
-      tlb_flush_tlb_off(proc, proc->tlb);
+      tlb_flush_tlb_of(proc, proc->tlb);
     }
   }
 
@@ -190,7 +190,7 @@ int tlbwrite(struct pcb_t * proc, BYTE data,
 #endif
    if(frmnum < 0){
     if(tlb_cache_write(proc->tlb, proc->pid, destination, data) < 0){
-      tlb_flush_tlb_off(proc, proc->tlb);
+      tlb_flush_tlb_of(proc, proc->tlb);
     }
   }
 

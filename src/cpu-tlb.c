@@ -148,6 +148,7 @@ int tlbread(struct pcb_t * proc, uint32_t source,
 
   if(frmnum < 0){
     if(tlb_cache_write(proc->tlb, proc->pid, source, destination) < 0){
+      tlb_flush_tlb_offset(proc, proc->tlb);
     }
   }
 
@@ -173,7 +174,7 @@ int tlbwrite(struct pcb_t * proc, BYTE data,
   /* TODO retrieve TLB CACHED frame num of accessing page(s))*/
   /* by using tlb_cache_read()/tlb_cache_write()
   frmnum is return value of tlb_cache_read/write value*/
-  frmnum = tlb_cache_write(proc->tlb, proc->pid, destination, data2);
+  frmnum = tlb_cache_write(proc->tlb, proc->pid, destination, data);
   val = __write(proc, 0, destination, offset, data);
 #ifdef IODUMP
   if (frmnum >= 0)
@@ -187,6 +188,11 @@ int tlbwrite(struct pcb_t * proc, BYTE data,
 #endif
   MEMPHY_dump(proc->mram);
 #endif
+   if(frmnum < 0){
+    if(tlb_cache_write(proc->tlb, proc->pid, destination, data) < 0){
+      tlb_flush_tlb_offset(proc, proc->tlb);
+    }
+  }
 
 
   /* TODO update TLB CACHED with frame num of recent accessing page(s)*/

@@ -40,7 +40,6 @@ int tlb_cache_read(struct memphy_struct * mp, int pid, int pgnum, BYTE *value)
     *      cache line by employing:
     *      direct mapped, associated mapping etc.
     */
-
    for (int i = 0; i < mp->maxsz / sizeof(TLBEntry); i++) {
       if (mp->entries[i].valid && mp->entries[i].pid == pid && mp->entries[i].page_number == pgnum) {
          *value = mp->entries[i].frame_number;
@@ -64,7 +63,6 @@ int tlb_cache_write(struct memphy_struct *mp, int pid, int pgnum, BYTE value)
     *      cache line by employing:
     *      direct mapped, associated mapping etc.
     */
-   TLBEntry *entries = (TLBEntry*) mp->storage;
    int min_used_index = -1;
    int min_used_time = INT_MAX;
    BYTE data;
@@ -132,11 +130,10 @@ int TLBMEMPHY_dump(struct memphy_struct * mp)
    /*TODO dump memphy contnt mp->storage 
     *     for tracing the memory content
     */
-   TLBEntry *entries = (TLBEntry *)mp->storage;
    printf("======== TLB MEMORY PHYSIC DUMP ========\n");
    for (int i = 0; i < mp->maxsz / sizeof(TLBEntry); i++) {
-      if ( entries[i].valid){
-         printf("Pid %d pgnum %d: %d\n", entries[i].pid, entries[i].page_number, entries[i].frame_number);
+      if ( mp->entries[i].valid){
+         printf("Pid %d pgnum %d: %d\n", mp->entries[i].pid, mp->entries[i].page_number, mp->entries[i].frame_number);
       }
    }
    return 0;

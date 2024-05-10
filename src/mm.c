@@ -134,7 +134,7 @@ int alloc_pages_range(struct pcb_t *caller, int req_pgnum, struct framephy_struc
       }
       else {
         newfp_str->fp_next = malloc(sizeof(struct framephy_struct));
-        newfp_str->owner = caller->mm;
+        newfp_str->fp_next->owner = caller->mm;
         newfp_str->fp_next->fpn = fpn;
         newfp_str->fp_next->fp_next = NULL;
         newfp_str = newfp_str->fp_next;
@@ -271,10 +271,11 @@ int init_mm(struct mm_struct *mm, struct pcb_t *caller)
   mm->pgd = malloc(PAGING_MAX_PGN*sizeof(uint32_t));
 
   /* By default the owner comes with at least one vma */
-  vma->vm_id = 1;
+  vma->vm_id = 0;
   vma->vm_start = 0;
   vma->vm_end = vma->vm_start;
   vma->sbrk = vma->vm_start;
+  mm->fifo_pgn = NULL;
   struct vm_rg_struct *first_rg = init_vm_rg(vma->vm_start, vma->vm_end);
   enlist_vm_rg_node(&vma->vm_freerg_list, first_rg);
 

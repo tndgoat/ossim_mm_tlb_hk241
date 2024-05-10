@@ -68,9 +68,18 @@ struct framephy_struct {
    struct mm_struct* owner;
 };
 
+typedef struct {
+   int valid;
+   int pid;          // Process ID
+   int page_number;  // Page number
+   int frame_number; // Frame number
+   int last_used;    // Timestamp to implement LRU
+} TLBEntry;
+
 struct memphy_struct {
    /* Basic field of data and size */
    BYTE *storage;
+   TLBEntry *entries;
    int maxsz;
    
    /* Sequential device fields */ 

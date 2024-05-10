@@ -24,13 +24,7 @@
 
 
 #define init_tlbcache(mp,sz,...) init_memphy(mp, sz, (1, ##__VA_ARGS__))
-typedef struct {
-   int valid;
-   int pid;          // Process ID
-   int page_number;  // Page number
-   int frame_number; // Frame number
-   int last_used;    // Timestamp to implement LRU
-} TLBEntry;
+
 int global_timer = 0;
 
 /*
@@ -46,12 +40,11 @@ int tlb_cache_read(struct memphy_struct * mp, int pid, int pgnum, BYTE *value)
     *      cache line by employing:
     *      direct mapped, associated mapping etc.
     */
-   TLBEntry *entries = (TLBEntry*) mp->storage;
 
    for (int i = 0; i < mp->maxsz / sizeof(TLBEntry); i++) {
-      if (entries[i].valid && entries[i].pid == pid && entries[i].page_number == pgnum) {
-         *value = entries[i].frame_number;
-         entries[i].last_used = ++global_timer;  // Update last used time
+      if (mp->entries[i].valid && mp->entries[i].pid == pid && mp->entries[i].page_number == pgnum) {
+         *value = mp->entries[i].frame_number;
+         mp->entries[i].last_used = ++global_timer;  // Update last used time
          return 0;  // TLB hit
       }
     }
@@ -74,21 +67,22 @@ int tlb_cache_write(struct memphy_struct *mp, int pid, int pgnum, BYTE value)
    TLBEntry *entries = (TLBEntry*) mp->storage;
    int min_used_index = -1;
    int min_used_time = INT_MAX;
-   BYTE* data;
-   if ( tlb_cache_read(mp, pid, pgnum, data) == 0) return 0; // HIT
+   BYTE data;
+
+   if ( tlb_cache_read(mp, pid, pgnum, &data) == 0) return 0; // HIT
    for (int i = 0; i < mp->maxsz / sizeof(TLBEntry); i++) {
-        if (!entries[i].valid) {  // Find an empty slot
-            entries[i] = (TLBEntry){1, pid, pgnum, value, ++global_timer};
+        if (!mp->entries[i].valid) {  // Find an empty slot
+            mp->entries[i] = (TLBEntry){1, pid, pgnum, value, ++global_timer};
             return 0;  // New entry added
         }
-        if (entries[i].last_used < min_used_time) {  // Track least recently used
-            min_used_time = entries[i].last_used;
+        if (mp->entries[i].last_used < min_used_time) {  // Track least recently used
+            min_used_time = mp->entries[i].last_used;
             min_used_index = i;
         }
     }
     
    // No empty slot found, replace least recently used
-   entries[min_used_index] = (TLBEntry){1, pid, pgnum, value, ++global_timer};
+   mp->entries[min_used_index] = (TLBEntry){1, pid, pgnum, value, ++global_timer};
    return -1; // MISS
 }
 
@@ -154,17 +148,17 @@ int TLBMEMPHY_dump(struct memphy_struct * mp)
  */
 int init_tlbmemphy(struct memphy_struct *mp, int max_size)
 {
-   mp->storage = (TLBEntry *)malloc(max_size*sizeof(BYTE));
+   mp->storage = (BYTE *)malloc(max_size*sizeof(BYTE));
    mp->maxsz = max_size;
-
    mp->rdmflg = 1;
-   TLBEntry *entries = (TLBEntry *)mp->storage;
+   mp->entries = (TLBEntry *)mp->storage;
+   
    for (int i = 0; i < mp->maxsz / sizeof(TLBEntry); i++) {
-      entries[i].valid = 0;
-      entries[i].pid = -1;
-      entries[i].page_number = -1;
-      entries[i].frame_number = -1;
-      entries[i].last_used = 0;
+      mp->entries[i].valid = 0;
+      mp->entries[i].pid = -1;
+      mp->entries[i].page_number = -1;
+      mp->entries[i].frame_number = -1;
+      mp->entries[i].last_used = 0;
    }
 
    return 0;

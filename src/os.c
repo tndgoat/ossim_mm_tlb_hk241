@@ -40,6 +40,7 @@ static struct ld_args{
 #endif
 } ld_processes;
 int num_processes;
+struct memphy_struct tlb;
 
 struct cpu_args {
 	struct timer_id_t * timer_id;
@@ -128,6 +129,9 @@ static void * ld_routine(void * args) {
 		proc->mram = mram;
 		proc->mswp = mswp;
 		proc->active_mswp = active_mswp;
+#endif
+#ifdef CPU_TLB
+		proc->tlb = &tlb;
 #endif
 		printf("\tLoaded a process at %s, PID: %d PRIO: %ld\n",
 			ld_processes.path[i], proc->pid, ld_processes.prio[i]);
@@ -239,7 +243,6 @@ int main(int argc, char * argv[]) {
 	struct timer_id_t * ld_event = attach_event();
 	start_timer();
 #ifdef CPU_TLB
-	struct memphy_struct tlb;
 
 	init_tlbmemphy(&tlb, tlbsz);
 #endif
